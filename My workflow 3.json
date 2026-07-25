@@ -1,0 +1,458 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "50643986-ae12-44c9-a590-24e9cff62de4",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SEQjmqTXZ8lThpiA",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "3a8c69fb-7869-804f-bfbf-d786fb389e2f",
+          "mode": "list",
+          "cachedResultName": "KHAM - Atención al Cliente",
+          "cachedResultUrl": "https://app.notion.com/p/3a8c69fb7869804fbfbfd786fb389e2f"
+        },
+        "title": "={{ $json.subject }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Fecha|date",
+              "includeTime": false,
+              "date": "={{ $json.headers.date }}"
+            },
+            {
+              "key": "Asunto|title",
+              "title": "={{ $json.subject }}"
+            },
+            {
+              "key": "Email|email",
+              "emailValue": "={{ $json.from.value[0].address }}"
+            },
+            {
+              "key": "Consulta|rich_text",
+              "textContent": "={{ $json.text.substring(0, 1900) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "3b786d05-2135-43cd-92cf-dafbee5cbfb5",
+      "name": "Create a database page",
+      "credentials": {
+        "notionApi": {
+          "id": "TYpsJmLI9ebhLzPo",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Actúa como asistente de atención al cliente de KHAM, una marca de indumentaria femenina.\n\nTu objetivo es redactar una propuesta de respuesta para responder el correo recibido.\n\nReglas:\n\n- Responde de forma cordial y profesional.\n- No inventes información sobre productos, precios, stock o envíos.\n- Si la consulta no tiene suficiente información, solicita amablemente más detalles.\n- No utilices emojis.\n- Firma únicamente como \"Equipo KHAM\".\n\nInformación del correo:\n\nAsunto:\n{{ $json.property_asunto }}\n\nConsulta:\n{{ $json.property_consulta }}\nGenera únicamente la respuesta que se enviaría al cliente.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "8ea94963-9271-4fee-a9dd-b0b3313c98ac",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        176
+      ],
+      "id": "641663e6-de01-41e4-b3f2-a921cc4bd7fe",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Lu2XrZeOuc9ubtoh",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2c0ecf02-383a-4ec7-8c23-345ae0ce53a0",
+              "leftValue": "={{ $json.headers.from }}",
+              "rightValue": "noreply@tiendanube.com",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "3103cfb4-56b9-45b5-8a75-53aa6711837c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "3a8c69fb-7869-805d-b35c-ee95923aaa65",
+          "mode": "list",
+          "cachedResultName": "KHAM - Otras consultas",
+          "cachedResultUrl": "https://app.notion.com/p/3a8c69fb7869805db35cee95923aaa65"
+        },
+        "title": "={{ $('Gmail Trigger').item.json.subject }}",
+        "simple": false,
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Asunto|title",
+              "title": "={{ $json.headers.subject }}"
+            },
+            {
+              "key": "Email|email",
+              "emailValue": "={{ $json.headers.from }}"
+            },
+            {
+              "key": "Fecha|date",
+              "includeTime": false,
+              "date": "={{ $json.headers.date }}"
+            },
+            {
+              "key": "Consulta|rich_text",
+              "textContent": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        272,
+        256
+      ],
+      "id": "8dfd70fd-2c2a-4e58-a937-52c0cb9ad242",
+      "name": "Create a database page1",
+      "credentials": {
+        "notionApi": {
+          "id": "TYpsJmLI9ebhLzPo",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Create a database page').item.json.id }}",
+          "mode": "id"
+        },
+        "simple": false,
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Propuesta AI|rich_text",
+              "textContent": "={{ $json.output }}"
+            },
+            {
+              "key": "Estado|status",
+              "statusValue": "Propuesta AI - Pendiente aprobación"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        976,
+        0
+      ],
+      "id": "d1f7e004-cedf-44dd-a216-75999c979f47",
+      "name": "Update a database page",
+      "credentials": {
+        "notionApi": {
+          "id": "TYpsJmLI9ebhLzPo",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "garciagodoycamila@gmail.com",
+        "subject": "Llego una consulta de cliente",
+        "message": "=Tenes una respuesta pendiente de verificacion en KHAM {{ $('Create a database page').item.json.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1184,
+        0
+      ],
+      "id": "ac92ed92-2b3d-42f2-9672-87b3ef3b5a89",
+      "name": "Send a message",
+      "webhookId": "2b79ef56-3391-45b7-9d80-63b37f5fa690",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SEQjmqTXZ8lThpiA",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Actúa como asistente administrativo de KHAM.\n\nVas a recibir correos electrónicos que NO corresponden a consultas de clientes provenientes de Tiendanube. Tu tarea es analizar el contenido y ayudar al equipo interno.\n\nInformación del correo:\n\nAsunto:\n{{ $('Gmail Trigger').item.json.subject }}\n\nRemitente:\n{{ $('Gmail Trigger').item.json.from.value[0].address }}\n\nContenido:\n{{ $('Gmail Trigger').item.json.text }}\n\nRealiza las siguientes tareas:\n\n1. Identifica de qué tipo de correo se trata. Clasifícalo en una de estas categorías:\n- Proveedor\n- Logística\n- Marketing\n- Finanzas\n- Empleo / RRHH\n- Reunión\n- Spam\n- Otro\n\n2. Escribe un breve resumen del correo (máximo 3 líneas).\n\n3. Indica si requiere acción por parte del equipo.\nResponde únicamente:\n- Sí\n- No\n\n4. Si requiere acción, redacta una propuesta de respuesta profesional, cordial y concisa.\n\nSi el correo es spam o publicidad, indícalo y no redactes respuesta.\n\nResponde utilizando el siguiente formato:\n\nCategoría:\nResumen:\nRequiere acción:\nPropuesta de respuesta:",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        480,
+        304
+      ],
+      "id": "d7bd90d3-4a83-4c63-88b6-1e64400c8478",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        496
+      ],
+      "id": "993e4b43-e6cd-48b3-bc22-e2b4b43a2e6b",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Lu2XrZeOuc9ubtoh",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Create a database page1').item.json.id }}",
+          "mode": "id"
+        },
+        "simple": false,
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Propuesta AI|rich_text",
+              "textContent": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        304
+      ],
+      "id": "6adae88a-73b4-4491-afee-242f3f1de506",
+      "name": "Update a database page1",
+      "credentials": {
+        "notionApi": {
+          "id": "TYpsJmLI9ebhLzPo",
+          "name": "Notion account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Update a database page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Create a database page",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create a database page1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a database page": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a database page": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a database page1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Update a database page1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b8e8ddd2-8078-4fe5-979f-2a855f6b7cd6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8ee674ad2ad7ed68a76ecfb17d73f9a7d3a18b85c0c61f3312dd2c60f98ad328"
+  },
+  "nodeGroups": [],
+  "id": "CeELjgr5NQVCivdb",
+  "tags": []
+}
